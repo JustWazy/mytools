@@ -14,7 +14,8 @@ proxy_api_urls = [
     # "https://www.proxy-list.download/api/v1/get?type=socks5",
     #"https://raw.githubusercontent.com/vakhov/fresh-proxy-list/master/socks5.txt",
     #"https://sunny9577.github.io/proxy-scraper/generated/socks5_proxies.txt",
-    #"https://raw.githubusercontent.com/ALIILAPRO/Proxy/main/socks5.txt"                                                              ]
+    #"https://raw.githubusercontent.com/ALIILAPRO/Proxy/main/socks5.txt"       
+]
 
 proxies = set()
 for url in proxy_api_urls:
