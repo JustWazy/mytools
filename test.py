@@ -83,7 +83,7 @@ def worker():
     return
 
 while time.time() - start_time < times:
-    while threading.active_count() >= 1000:
+    while threading.active_count() >= 5000:
         pass
     threading.Thread(target=worker).start()
 
