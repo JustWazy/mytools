@@ -79,6 +79,7 @@ def worker():
 
             except Exception as error:
                 blacklisted_proxies.add(proxy)
+                threading.Thread(target=worker).start()
                 break
     return
 
