@@ -9,7 +9,8 @@ import time
 import os
 
 proxy_api_urls = [
-    "https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt"
+    "https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt",
+    "https://cdn.jsdelivr.net/gh/ObcbO/getproxy/file/socks5.txt"
     #"https://api.proxyscrape.com/v2/?request=displayproxies&protocol=socks5&timeout=10000&country=all&ssl=all&anonymity=all",
     # "https://www.proxy-list.download/api/v1/get?type=socks5",
     #"https://raw.githubusercontent.com/vakhov/fresh-proxy-list/master/socks5.txt",
