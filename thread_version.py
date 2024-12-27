@@ -74,7 +74,7 @@ def worker():
             blacklisted_proxies.add(proxy)
     return
     
-while threading.active_count() >= 5:
+while threading.active_count() >= 100:
     pass
 threading.Thread(target=worker).start()
 
