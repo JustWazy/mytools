@@ -72,10 +72,9 @@ def worker():
 
         except Exception as error:
             blacklisted_proxies.add(proxy)
-            break
     return
     
-while threading.active_count() >= 10000:
+while threading.active_count() >= 1000:
     pass
 threading.Thread(target=worker).start()
 
