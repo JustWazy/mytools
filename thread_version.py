@@ -59,11 +59,6 @@ def create_proxied_socket(proxy_host, proxy_port):
     s.set_proxy(socks.SOCKS5, proxy_host, proxy_port)
     return s
 
-def tulis_proxy_ke_file():
-    with open("prox.txt", "w") as file:
-        for proxy in whitelisted_proxies:
-            file.write(proxy + "\n")
-
 def worker():
     global blacklisted_proxies
     target = (target_ip, target_port)
@@ -78,6 +73,7 @@ def worker():
 
         except Exception as error:
             blacklisted_proxies.add(proxy)
+            break
     return
 
 while time.time() - start_time < times:
