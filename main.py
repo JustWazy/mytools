@@ -8,13 +8,14 @@ import struct
 import time
 
 proxy_api_urls = [
-    "https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt"
+    "https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt",
+    "https://raw.githubusercontent.com/dpangestuw/Free-Proxy/refs/heads/main/socks5_proxies.txt"
 ]
 
 proxies = set()
 for url in proxy_api_urls:
     response = requests.get(url)
-    proxies.update(response.text.strip().replace('\r', '').split('\n'))
+    proxies.update([proxy.lstrip("socks5://") for proxy in response.text.strip().replace('\r', '').split('\n')])
 
 print("███████████████████████████")
 print("███████▀▀▀░░░░░░░▀▀▀███████")
